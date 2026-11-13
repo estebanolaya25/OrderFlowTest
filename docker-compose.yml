@@ -83,6 +83,36 @@ services:
       timeout: 5s
       retries: 6
       start_period: 15s
+    # Orders espera a Inventory: así la cola inventory-pedido-creado ya existe cuando se publica el primer
+    # PedidoCreado. Sin cola enlazada, RabbitMQ descarta el mensaje y el pedido quedaría en Pending.
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+      inventory-api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  inventory-api:
+    build:
+      context: ./Inventory_BACK
+      dockerfile: Dockerfile
+    container_name: orderflow-inventory-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__SQLConnectionString: "Server=sqlserver,1433;Database=OrderFlowInventoryDB;User Id=orderflow-inventory;Password=${INVENTORY_DB_PASSWORD:-OrderFlow_Inventory_2026!};TrustServerCertificate=True;"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Usuario: ${RABBITMQ_USER:-orderflow}
+      RabbitMQ__Password: ${RABBITMQ_PASSWORD:-OrderFlow_Rabbit_2026!}
+    ports:
+      - "5202:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
     depends_on:
       db-init:
         condition: service_completed_successfully

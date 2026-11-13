@@ -26,18 +26,21 @@ CREATE TABLE inv.Stock (
 
 -- Resultado de cada pedido procesado (uno por pedido). Si el evento llega repetido, el consumidor
 -- no toca el stock: lee este resultado y lo vuelve a publicar, por si la publicación anterior falló.
+-- EventoRespuestaId se reutiliza al republicar, así Orders también reconoce la respuesta como duplicada.
 -- Sin FK a inv.Stock: un SKU desconocido también se registra, como Rechazado.
 IF OBJECT_ID(N'inv.Reservas', N'U') IS NULL
 CREATE TABLE inv.Reservas (
-    PedidoId   UNIQUEIDENTIFIER NOT NULL,
-    MensajeId  UNIQUEIDENTIFIER NOT NULL,
-    Sku        NVARCHAR(50)     NOT NULL,
-    Cantidad   INT              NOT NULL,
-    Resultado  VARCHAR(20)      NOT NULL,
-    Motivo     NVARCHAR(300)    NULL,
-    CreadoEn   DATETIME2        NOT NULL CONSTRAINT DF_Reservas_CreadoEn DEFAULT (SYSUTCDATETIME()),
+    PedidoId           UNIQUEIDENTIFIER NOT NULL,
+    MensajeId          UNIQUEIDENTIFIER NOT NULL,
+    EventoRespuestaId  UNIQUEIDENTIFIER NOT NULL,
+    Sku                NVARCHAR(50)     NOT NULL,
+    Cantidad           INT              NOT NULL,
+    Resultado          VARCHAR(20)      NOT NULL,
+    Motivo             NVARCHAR(300)    NULL,
+    CreadoEn           DATETIME2        NOT NULL CONSTRAINT DF_Reservas_CreadoEn DEFAULT (SYSUTCDATETIME()),
     CONSTRAINT PK_Reservas PRIMARY KEY (PedidoId),
     CONSTRAINT UQ_Reservas_Mensaje UNIQUE (MensajeId),
+    CONSTRAINT UQ_Reservas_EventoRespuesta UNIQUE (EventoRespuestaId),
     CONSTRAINT CK_Reservas_Cantidad CHECK (Cantidad > 0),
     CONSTRAINT CK_Reservas_Resultado CHECK (Resultado IN ('Reservado', 'Rechazado'))
 );
