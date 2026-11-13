@@ -1,0 +1,18 @@
+# Nombre de red estable "orders-api" dentro del clúster: reparte las peticiones entre las réplicas que estén "ready".
+# Es el equivalente al nombre del servicio en docker-compose. ClusterIP = solo accesible dentro del clúster;
+# la exposición pública (para el frontend en Azure Static Web Apps) se haría con un Ingress, ver README.
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-api
+  namespace: orderflow
+  labels:
+    app: orders-api
+spec:
+  type: ClusterIP
+  selector:
+    app: orders-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

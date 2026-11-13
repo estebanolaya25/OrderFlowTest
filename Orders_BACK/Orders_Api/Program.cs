@@ -38,6 +38,17 @@ builder.Services.AddSwaggerGen(opciones =>
     opciones.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"));
 });
 
+// CORS solo si el front se sirve desde otro dominio (por ejemplo Azure Static Web Apps).
+// En Docker no hace falta: nginx sirve el front y reenvía /api desde el mismo origen.
+// Ejemplo: Cors__OrigenesPermitidos=https://<app>.azurestaticapps.net (varios separados por coma).
+string[] origenesPermitidos = (builder.Configuration["Cors:OrigenesPermitidos"] ?? string.Empty)
+    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+if (origenesPermitidos.Length > 0)
+{
+    builder.Services.AddCors(opciones => opciones.AddDefaultPolicy(politica =>
+        politica.WithOrigins(origenesPermitidos).AllowAnyHeader().AllowAnyMethod()));
+}
+
 // /health/ready revisa SQL Server y RabbitMQ (MassTransit registra su propio check con la etiqueta "ready").
 builder.Services.AddHealthChecks().AddSqlServer(cadenaConexion, name: "sqlserver", tags: new[] { "ready" });
 
@@ -80,6 +91,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.DocumentTitle = "OrderFlow - Orders API");
 }
+
+if (origenesPermitidos.Length > 0)
+    app.UseCors();
 
 app.MapControllers();
 

@@ -1,0 +1,5 @@
+# Espacio de nombres propio: todos los recursos de OrderFlow quedan agrupados y aislados del resto del clúster.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: orderflow

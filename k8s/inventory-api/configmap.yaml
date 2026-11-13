@@ -1,0 +1,13 @@
+# Configuración NO secreta de Inventory. Llega al contenedor como variables de entorno (envFrom en deployment.yaml).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventory-api-config
+  namespace: orderflow
+  labels:
+    app: inventory-api
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  RabbitMQ__Host: "rabbitmq"
+  RabbitMQ__Puerto: "5672"
+  RabbitMQ__VirtualHost: "/"

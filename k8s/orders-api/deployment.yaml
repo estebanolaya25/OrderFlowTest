@@ -1,0 +1,80 @@
+# Orders API: 2 réplicas detrás del Service "orders-api".
+#
+# ¿Por qué puede haber varias réplicas sin romper nada?
+#  - El Outbox se lee con UPDLOCK + READPAST: cada réplica publica eventos distintos, ninguno se publica dos veces a la vez.
+#  - Los consumidores de StockReservado/StockRechazado son idempotentes (ped.MensajesProcesados) y la transición
+#    de estado es atómica (UPDATE ... WHERE Estado IN ('Pending')).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-api
+  namespace: orderflow
+  labels:
+    app: orders-api
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: orders-api
+  # Actualización sin cortes: primero se levanta la réplica nueva y solo cuando está "ready" se baja una vieja.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: orders-api
+    spec:
+      # La imagen ya corre con el usuario sin privilegios "app" (USER $APP_UID = 1654 en el Dockerfile).
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1654
+      containers:
+        - name: orders-api
+          # Misma imagen del Dockerfile multi-stage, publicada en un registro (por ejemplo Azure Container Registry).
+          image: orderflowacr.azurecr.io/orderflow/orders-api:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          # Toda la configuración por variables de entorno: la no secreta del ConfigMap y la sensible del Secret.
+          envFrom:
+            - configMapRef:
+                name: orders-api-config
+            - secretRef:
+                name: orders-api-secrets
+          # requests: lo que el clúster reserva para programar el pod.
+          # limits: el máximo; si supera la memoria, Kubernetes reinicia el contenedor.
+          # .NET ajusta su recolector de basura al límite de memoria del contenedor.
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          # Liveness: "¿el proceso sigue vivo?". /health no revisa dependencias a propósito:
+          # si SQL Server o RabbitMQ caen, reiniciar la API no arregla nada.
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # Readiness: "¿puede atender tráfico?". /health/ready revisa SQL Server y RabbitMQ.
+          # Si falla, el Service deja de enviarle peticiones (sin reiniciarlo) hasta que se recupere.
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false

@@ -1,0 +1,18 @@
+# Configuración NO secreta de Orders API. Llega al contenedor como variables de entorno (envFrom en deployment.yaml),
+# igual que en docker-compose: el código no cambia entre entornos.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orders-api-config
+  namespace: orderflow
+  labels:
+    app: orders-api
+data:
+  # Production desactiva Swagger (solo se expone en Development, ver Program.cs).
+  ASPNETCORE_ENVIRONMENT: "Production"
+  # Nombre del Service de RabbitMQ dentro del clúster (o el host del servicio gestionado).
+  RabbitMQ__Host: "rabbitmq"
+  RabbitMQ__Puerto: "5672"
+  RabbitMQ__VirtualHost: "/"
+  # El frontend se publica en Azure Static Web Apps (otro dominio): solo ese origen puede llamar a la API.
+  Cors__OrigenesPermitidos: "https://orderflow.azurestaticapps.net"

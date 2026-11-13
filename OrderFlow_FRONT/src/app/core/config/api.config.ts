@@ -1,10 +1,10 @@
-// Todas las llamadas van a /api, que reenvía a Orders API:
-//  - en Docker, nginx (nginx.conf) hace proxy a http://orders-api:8080
-//  - en desarrollo, ng serve hace proxy a http://localhost:5201 (proxy.conf.json)
-// Así no hay URLs del backend en el código ni necesidad de CORS.
-export const API = {
-  pedidos: '/api/orders',
-  productos: '/api/products'
+// Rutas de Orders API, relativas a la URL base que entrega ConfigService (/assets/config.json):
+//  - en Docker, "/api" y nginx (nginx.conf) hace proxy a http://orders-api:8080
+//  - en desarrollo, "/api" y ng serve hace proxy a http://localhost:5301 (proxy.conf.json)
+//  - en Azure Static Web Apps, la URL pública de Orders API
+export const RUTAS_API = {
+  pedidos: '/orders',
+  productos: '/products'
 } as const;
 
 // Cada cuánto se refresca la lista de pedidos (polling). El PDF lo acepta; SignalR sería el bonus.

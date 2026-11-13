@@ -1,0 +1,17 @@
+# Acceso interno a Inventory (GET /stock y health checks). No se expone fuera del clúster:
+# Orders e Inventory se comunican solo por RabbitMQ.
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-api
+  namespace: orderflow
+  labels:
+    app: inventory-api
+spec:
+  type: ClusterIP
+  selector:
+    app: inventory-api
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
