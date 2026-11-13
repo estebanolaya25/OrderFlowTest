@@ -1,0 +1,17 @@
+# .NET
+bin/
+obj/
+.vs/
+*.user
+TestResults/
+
+# Angular / Node
+node_modules/
+dist/
+.angular/
+
+# Configuración local (los valores por defecto de desarrollo están en docker-compose.yml y .env.example)
+.env
+
+# Enunciado de la prueba (documento del evaluador, no forma parte de la solución)
+*.pdf

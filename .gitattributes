@@ -1,0 +1,2 @@
+# Los scripts que se ejecutan dentro de contenedores Linux deben tener fin de línea LF.
+*.sh text eol=lf

@@ -1,0 +1,95 @@
+name: orderflow
+
+# Los valores por defecto (${VAR:-...}) son solo para desarrollo local: permiten levantar todo
+# con "docker compose up" sin pasos manuales. Para otro entorno se sobreescriben con un archivo .env.
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: orderflow-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-OrderFlow_Sa_2026!}
+    # 14333 en el anfitrión para no chocar con un SQL Server local; entre contenedores se usa sqlserver:1433.
+    ports:
+      - "14333:1433"
+    volumes:
+      - sqlserver-datos:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q \"SELECT 1\" -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  # Contenedor de un solo uso: ejecuta los scripts de BaseDatos de cada servicio y termina.
+  # Los servicios .NET esperan a que termine bien (service_completed_successfully).
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: orderflow-db-init
+    entrypoint: ["/bin/bash", "/scripts/inicializar.sh"]
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-OrderFlow_Sa_2026!}
+      ORDERS_DB_PASSWORD: ${ORDERS_DB_PASSWORD:-OrderFlow_Orders_2026!}
+      INVENTORY_DB_PASSWORD: ${INVENTORY_DB_PASSWORD:-OrderFlow_Inventory_2026!}
+    volumes:
+      - ./BaseDatos/inicializar.sh:/scripts/inicializar.sh:ro
+      - ./Orders_BACK/BaseDatos:/scripts/orders:ro
+      - ./Inventory_BACK/BaseDatos:/scripts/inventory:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: orderflow-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-orderflow}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-OrderFlow_Rabbit_2026!}
+    # 5673/15673 en el anfitrión para no chocar con otro RabbitMQ local.
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    volumes:
+      - rabbitmq-datos:/var/lib/rabbitmq
+    healthcheck:
+      # check_port_connectivity (y no solo ping): el puerto AMQP ya acepta conexiones.
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    restart: unless-stopped
+
+  orders-api:
+    build:
+      context: ./Orders_BACK
+      dockerfile: Dockerfile
+    container_name: orderflow-orders-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__SQLConnectionString: "Server=sqlserver,1433;Database=OrderFlowOrdersDB;User Id=orderflow-orders;Password=${ORDERS_DB_PASSWORD:-OrderFlow_Orders_2026!};TrustServerCertificate=True;"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Usuario: ${RABBITMQ_USER:-orderflow}
+      RabbitMQ__Password: ${RABBITMQ_PASSWORD:-OrderFlow_Rabbit_2026!}
+    ports:
+      - "5201:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  sqlserver-datos:
+  rabbitmq-datos:
