@@ -67,7 +67,8 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 3
           # Readiness: "¿puede atender tráfico?". /health/ready revisa SQL Server y RabbitMQ.
-          # Si falla, el Service deja de enviarle peticiones (sin reiniciarlo) hasta que se recupere.
+          # Si SQL Server falla, el Service deja de enviarle peticiones (sin reiniciarlo) hasta que se recupere.
+          # Con RabbitMQ caído queda "Degraded" y sigue recibiendo tráfico: el Outbox permite crear pedidos igual.
           readinessProbe:
             httpGet:
               path: /health/ready
