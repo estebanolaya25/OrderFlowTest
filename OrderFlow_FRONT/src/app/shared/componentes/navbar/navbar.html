@@ -1,0 +1,28 @@
+<nav class="navbar navbar-expand-md barra sticky-top">
+  <div class="container">
+    <a class="navbar-brand marca" routerLink="/pedidos">
+      <span class="marca-icono"><i class="bi bi-box-seam-fill"></i></span>
+      <span>Order<strong>Flow</strong></span>
+    </a>
+
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
+            aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menú">
+      <i class="bi bi-list fs-3"></i>
+    </button>
+
+    <div class="collapse navbar-collapse" id="menuPrincipal">
+      <ul class="navbar-nav ms-auto align-items-md-center gap-md-2">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/pedidos" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: true }">
+            <i class="bi bi-list-check me-1"></i>Pedidos
+          </a>
+        </li>
+        <li class="nav-item ms-md-2">
+          <a class="btn btn-primary btn-sm px-3" routerLink="/pedidos/nuevo">
+            <i class="bi bi-plus-lg me-1"></i>Nuevo pedido
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

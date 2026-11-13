@@ -1,0 +1,59 @@
+<section class="container pedidos">
+  <div class="cabecera">
+    <div>
+      <h1>Pedidos</h1>
+      <span class="actualizacion texto-suave" *ngIf="ultimaActualizacion">
+        <span class="punto" [class.con-error]="error" aria-hidden="true"></span>
+        Actualizado {{ ultimaActualizacion | date: 'h:mm:ss a' }} · se refresca cada {{ intervaloSegundos }} s
+      </span>
+    </div>
+    <a class="btn btn-primary" routerLink="/pedidos/nuevo"><i class="bi bi-plus-lg me-1"></i>Nuevo pedido</a>
+  </div>
+
+  <!-- Si falla un refresco pero ya hay datos, se siguen mostrando y se avisa que pueden estar desactualizados. -->
+  <div class="alert d-flex gap-2" *ngIf="error" role="alert"
+       [class.alert-danger]="!pedidos" [class.alert-warning]="pedidos">
+    <i class="bi bi-exclamation-triangle"></i>
+    <span>{{ error }}<ng-container *ngIf="pedidos"> Se muestran los últimos datos; se reintentará automáticamente.</ng-container></span>
+  </div>
+
+  <div class="filtros" *ngIf="pedidos && pedidos.length > 0" role="group" aria-label="Filtrar por estado">
+    <button type="button" class="chip" [class.activo]="filtro === ''" (click)="filtrar('')">
+      Todos <span class="contador">{{ pedidos.length }}</span>
+    </button>
+    <button type="button" class="chip" *ngFor="let estado of estados" [class.activo]="filtro === estado.valor" (click)="filtrar(estado.valor)">
+      <i class="bi" [ngClass]="estado.icono"></i>{{ estado.texto }} <span class="contador">{{ cantidadPorEstado(estado.valor) }}</span>
+    </button>
+  </div>
+
+  <div class="lista" *ngIf="!pedidos && !error">
+    <div class="esqueleto" *ngFor="let i of [1, 2, 3]"></div>
+  </div>
+
+  <div class="vacio superficie" *ngIf="pedidos && pedidosFiltrados.length === 0">
+    <span class="icono"><i class="bi bi-receipt"></i></span>
+    <h2>{{ filtro ? 'No hay pedidos en este estado' : 'Aún no hay pedidos' }}</h2>
+    <p class="texto-suave">{{ filtro ? 'Pruebe con otro filtro.' : 'Registre el primero y vea cómo cambia de estado aquí.' }}</p>
+    <a class="btn btn-primary" *ngIf="!filtro" routerLink="/pedidos/nuevo">Crear pedido</a>
+    <button class="btn btn-outline-primary" *ngIf="filtro" type="button" (click)="filtrar('')">Ver todos</button>
+  </div>
+
+  <ul class="lista" *ngIf="pedidosFiltrados.length > 0">
+    <li class="pedido superficie" *ngFor="let pedido of pedidosFiltrados; trackBy: porId"
+        [class.nuevo]="pedido.id === nuevoId" [class.cambio]="resaltados.has(pedido.id)">
+      <div class="principal">
+        <strong>{{ pedido.clienteNombre }}</strong>
+        <span class="texto-suave id" [title]="pedido.id">#{{ pedido.id.slice(0, 8) }}</span>
+      </div>
+      <div class="producto">
+        <span class="sku">{{ pedido.sku }}</span>
+        <span class="texto-suave">× {{ pedido.cantidad }}</span>
+      </div>
+      <span class="fecha texto-suave">{{ fecha(pedido.creadoEn) | date: 'd MMM, h:mm:ss a' }}</span>
+      <app-estado-pedido [estado]="pedido.estado"></app-estado-pedido>
+      <p class="motivo" *ngIf="pedido.motivoRechazo">
+        <i class="bi bi-info-circle me-1"></i>{{ pedido.motivoRechazo }}
+      </p>
+    </li>
+  </ul>
+</section>

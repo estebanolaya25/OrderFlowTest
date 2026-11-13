@@ -1,0 +1,25 @@
+@use 'tema' as *;
+
+.contenido {
+  flex: 1;
+  padding-bottom: 3rem;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.saltar-contenido {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 1200;
+  padding: 0.5rem 1rem;
+  border-radius: $radio;
+  background: $primario;
+  color: $superficie;
+
+  &:focus {
+    top: 1rem;
+  }
+}

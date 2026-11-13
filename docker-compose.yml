@@ -120,6 +120,19 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # Panel de pedidos (Angular servido por nginx). nginx también reenvía /api/* a orders-api.
+  frontend:
+    build:
+      context: ./OrderFlow_FRONT
+      dockerfile: Dockerfile
+    container_name: orderflow-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      orders-api:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   sqlserver-datos:
   rabbitmq-datos:

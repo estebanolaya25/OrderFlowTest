@@ -1,0 +1,75 @@
+<section class="container pedido-nuevo">
+  <a class="volver" routerLink="/pedidos"><i class="bi bi-arrow-left me-1"></i>Volver a pedidos</a>
+
+  <div class="contenido">
+    <form class="superficie formulario" [formGroup]="formulario" (ngSubmit)="crear()" novalidate>
+      <h1>Nuevo pedido</h1>
+      <p class="texto-suave">Registre un pedido manual. Se confirmará automáticamente si hay stock.</p>
+
+      <div class="alert alert-danger d-flex gap-2" *ngIf="error" role="alert">
+        <i class="bi bi-exclamation-triangle"></i><span>{{ error }}</span>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="clienteNombre">Nombre del cliente</label>
+        <input id="clienteNombre" class="form-control" formControlName="clienteNombre" autocomplete="name"
+               placeholder="Ej. Ana Pérez" [maxlength]="reglas.longitudMaximaNombre"
+               [class.is-invalid]="invalido('clienteNombre')">
+        <div class="invalid-feedback">{{ mensaje('clienteNombre') }}</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="sku">Producto</label>
+        <select id="sku" class="form-select" formControlName="sku" [class.is-invalid]="invalido('sku')"
+                [attr.disabled]="cargandoProductos || errorProductos ? true : null">
+          <option value="" disabled>{{ cargandoProductos ? 'Cargando catálogo…' : 'Seleccione un producto…' }}</option>
+          <option *ngFor="let producto of productos" [value]="producto.sku">{{ producto.sku }} · {{ producto.nombre }}</option>
+        </select>
+        <div class="invalid-feedback">{{ mensaje('sku') }}</div>
+        <div class="text-danger small mt-1" *ngIf="errorProductos">
+          {{ errorProductos }}
+          <button type="button" class="btn btn-link btn-sm p-0 align-baseline" (click)="cargarProductos()">Reintentar</button>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label" for="cantidad">Cantidad</label>
+        <input id="cantidad" class="form-control cantidad" type="number" formControlName="cantidad"
+               [min]="reglas.cantidadMinima" [max]="reglas.cantidadMaxima" step="1"
+               [class.is-invalid]="invalido('cantidad')">
+        <div class="invalid-feedback">{{ mensaje('cantidad') }}</div>
+        <div class="form-text">Entre {{ reglas.cantidadMinima }} y {{ reglas.cantidadMaxima }} unidades.</div>
+      </div>
+
+      <div class="acciones">
+        <a class="btn btn-link" routerLink="/pedidos">Cancelar</a>
+        <button class="btn btn-primary btn-lg" type="submit" [disabled]="enviando">
+          <span class="spinner-border spinner-border-sm me-2" *ngIf="enviando"></span>
+          {{ enviando ? 'Creando pedido…' : 'Crear pedido' }}
+        </button>
+      </div>
+    </form>
+
+    <aside class="superficie flujo">
+      <h2>¿Qué pasa después?</h2>
+      <ol>
+        <li>
+          <app-estado-pedido [estado]="'Pending'"></app-estado-pedido>
+          <span>El pedido se guarda y se avisa a Inventory.</span>
+        </li>
+        <li>
+          <span class="paso"><i class="bi bi-box-seam"></i></span>
+          <span>Inventory intenta reservar el stock.</span>
+        </li>
+        <li>
+          <app-estado-pedido [estado]="'Confirmed'"></app-estado-pedido>
+          <span>Si hay unidades suficientes.</span>
+        </li>
+        <li>
+          <app-estado-pedido [estado]="'Rejected'"></app-estado-pedido>
+          <span>Si no hay stock; verá el motivo en la lista.</span>
+        </li>
+      </ol>
+    </aside>
+  </div>
+</section>

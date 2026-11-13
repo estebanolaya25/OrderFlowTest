@@ -1,0 +1,177 @@
+@use 'tema' as *;
+
+.pedidos {
+  max-width: 64rem;
+  padding-top: 2rem;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.actualizacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+// Punto "en vivo": verde mientras el refresco funciona, rojo si el último falló.
+.punto {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: $exito;
+  animation: latido 2s ease-in-out infinite;
+
+  &.con-error {
+    background: $peligro;
+    animation: none;
+  }
+}
+
+@keyframes latido {
+  50% { opacity: 0.35; }
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid $borde;
+  border-radius: $radio-pildora;
+  background: $superficie;
+  color: $texto-suave;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: border-color $transicion, color $transicion, background-color $transicion;
+
+  &:hover {
+    border-color: rgba($primario, 0.4);
+    color: $primario;
+  }
+
+  &.activo {
+    border-color: $primario;
+    background: $primario-claro;
+    color: $primario;
+  }
+}
+
+.contador {
+  padding: 0 0.45rem;
+  border-radius: $radio-pildora;
+  background: rgba($texto, 0.06);
+  font-size: 0.75rem;
+}
+
+.lista {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pedido {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  padding: 1rem 1.25rem;
+  transition: border-color 0.6s ease, box-shadow 0.6s ease, background-color 0.6s ease;
+
+  @include desde(md) {
+    grid-template-columns: 1.5fr 1fr 10rem 8rem;
+  }
+
+  // Recién creado desde el formulario.
+  &.nuevo {
+    border-color: rgba($primario, 0.45);
+  }
+
+  // Acaba de cambiar de estado en este refresco.
+  &.cambio {
+    background: $primario-claro;
+    box-shadow: 0 0 0 3px rgba($primario, 0.2);
+  }
+}
+
+.principal {
+  display: flex;
+  flex-direction: column;
+}
+
+.id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+}
+
+.producto {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.sku {
+  font-weight: 600;
+}
+
+.fecha {
+  font-size: 0.85rem;
+}
+
+.motivo {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: $radio-sm;
+  background: $peligro-claro;
+  color: $peligro;
+  font-size: 0.85rem;
+}
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+
+  .icono {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    background: $primario-claro;
+    color: $primario;
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .punto { animation: none; }
+}

@@ -1,0 +1,85 @@
+@use 'tema' as *;
+
+.pedido-nuevo {
+  max-width: 64rem;
+  padding-top: 2rem;
+}
+
+.volver {
+  display: inline-block;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.contenido {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+
+  @include desde(lg) {
+    grid-template-columns: 1fr 20rem;
+  }
+}
+
+.formulario {
+  padding: 1.75rem;
+
+  h1 {
+    font-size: 1.6rem;
+    margin-bottom: 0.25rem;
+  }
+
+  > p {
+    margin-bottom: 1.5rem;
+  }
+}
+
+.cantidad {
+  max-width: 10rem;
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid $borde;
+}
+
+.flujo {
+  padding: 1.5rem;
+
+  h2 {
+    font-size: 1.05rem;
+    margin-bottom: 1rem;
+  }
+
+  ol {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    color: $texto-suave;
+  }
+}
+
+.paso {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: $radio-pildora;
+  background: $primario-claro;
+  color: $primario;
+  font-size: 0.8rem;
+}
