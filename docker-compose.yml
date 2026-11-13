@@ -43,6 +43,27 @@ services:
         condition: service_healthy
     restart: "no"
 
+  # Solo para depurar desde Visual Studio (perfil "local", no se levanta con un "docker compose up" normal).
+  # Crea OrderFlowOrdersDB_Local y OrderFlowInventoryDB_Local en el mismo SQL Server, para que los
+  # servicios locales no compartan datos con los que corren en Docker. Lo invoca iniciar-local.ps1.
+  db-init-local:
+    profiles: ["local"]
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    entrypoint: ["/bin/bash", "/scripts/inicializar.sh"]
+    environment:
+      SUFIJO_BD: _Local
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-OrderFlow_Sa_2026!}
+      ORDERS_DB_PASSWORD: ${ORDERS_DB_PASSWORD:-OrderFlow_Orders_2026!}
+      INVENTORY_DB_PASSWORD: ${INVENTORY_DB_PASSWORD:-OrderFlow_Inventory_2026!}
+    volumes:
+      - ./BaseDatos/inicializar.sh:/scripts/inicializar.sh:ro
+      - ./Orders_BACK/BaseDatos:/scripts/orders:ro
+      - ./Inventory_BACK/BaseDatos:/scripts/inventory:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: orderflow-rabbitmq

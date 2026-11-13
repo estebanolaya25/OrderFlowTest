@@ -1,0 +1,9 @@
+[
+  {
+    "Name": "Backend local (Orders + Inventory)",
+    "Projects": [
+      { "Path": "Orders_BACK\\Orders_Api\\Orders_Api.csproj", "Action": "Start", "DebugTarget": "http" },
+      { "Path": "Inventory_BACK\\Inventory_Api\\Inventory_Api.csproj", "Action": "Start", "DebugTarget": "http" }
+    ]
+  }
+]
