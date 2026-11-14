@@ -139,11 +139,13 @@ Cada servicio sigue la misma separación por capas. La API solo traduce HTTP o m
 
 ### Contratos
 
-| Evento | Publica | Consume | Campos |
-|---|---|---|---|
-| `PedidoCreado` | Orders | Inventory | `eventoId, pedidoId, sku, cantidad, ocurridoEn` |
-| `StockReservado` | Inventory | Orders | `eventoId, pedidoId, sku, cantidad, ocurridoEn` |
-| `StockRechazado` | Inventory | Orders | `… , motivo` |
+| Evento | En el enunciado | Publica | Consume | Campos |
+|---|---|---|---|---|
+| `PedidoCreado` | `OrderCreated` | Orders | Inventory | `eventoId, pedidoId, sku, cantidad, ocurridoEn` |
+| `StockReservado` | `StockReserved` | Inventory | Orders | `eventoId, pedidoId, sku, cantidad, ocurridoEn` |
+| `StockRechazado` | `StockRejected` | Inventory | Orders | `… , motivo` |
+
+Los nombres van en español, como el resto del dominio (`clienteNombre`, `cantidad`, `estado`); el enunciado deja libres los nombres de eventos, colas y campos. Semánticamente son los mismos eventos.
 
 Las clases de contratos están **duplicadas** en el `CapaDTO/Contratos` de cada servicio con el mismo namespace (MassTransit enruta por nombre completo de tipo). Así ningún servicio depende de un proyecto del otro.
 
